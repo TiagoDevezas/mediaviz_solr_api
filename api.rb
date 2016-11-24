@@ -4,6 +4,8 @@ require 'oj'
 require 'rsolr'
 require_relative 'helpers/helpers'
 
+configure { set :server, :puma }
+
 Oj.default_options = {:mode => :strict }
 
 solr = RSolr.connect url: 'http://localhost:8983/solr/articles'
