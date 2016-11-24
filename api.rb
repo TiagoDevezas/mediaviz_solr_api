@@ -1,5 +1,4 @@
 require 'sinatra'
-# require 'sinatra/json'
 require 'oj'
 require 'rsolr'
 require_relative 'helpers/helpers'
