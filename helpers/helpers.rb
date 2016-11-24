@@ -10,7 +10,10 @@ helpers do
         params[:source_acronym] ? "source_acronym:#{params[:source_acronym]}" : nil,
         params[:since] ? "date_only:[#{params[:since]} TO *]" : nil,
         params[:until] ? "date_only:[* TO #{params[:until]}]" : nil,
-        params[:since] && params[:until] ? "date_only:[#{params[:since]} TO #{params[:until]}]" : nil
+        params[:since] && params[:until] ? "date_only:[#{params[:since]} TO #{params[:until]}]" : nil,
+        params[:by] && params[:by] == 'hour' ? "hour:[0 TO 23]" : nil,
+        params[:by] && params[:by] == 'weekday' ? "weekday:[1 TO 7]" : nil,
+        params[:by] && params[:by] == 'month' ? "month:[1 TO 12]" : nil
       ]
     }
   end

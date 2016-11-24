@@ -31,9 +31,9 @@ get '/groups' do
       "{!tag=t1 sum=true}facebook_shares",
       "{!tag=t1 sum=true}twitter_shares"
     ],
-    "facet.sort": "date_only asc",
+    "facet.sort": params[:by] ? "#{params[:by]} asc" : "date_only asc",
     "facet.limit": -1,
-    "facet.pivot.mincount": params[:since] || params[:until] ? 1 : 0
+    "facet.pivot.mincount": (params[:since] || params[:until]) && !params[:by] ? 1 : 0
   }
 
   response = solr.select params: common_query_params.merge(groups_query_params)
