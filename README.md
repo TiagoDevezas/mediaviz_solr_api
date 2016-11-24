@@ -4,6 +4,6 @@
 
         $ bundle
 
-2. Run development server:
+2. Run development server (reloads on changes):
 
-        $ rerun rackup
+        $ rerun 'rackup'
