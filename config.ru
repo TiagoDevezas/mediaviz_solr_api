@@ -1,7 +1,7 @@
-require 'rubygems'
-require 'bundler'
+# require 'rubygems'
+# require 'bundler'
 
-Bundler.require
+# Bundler.require
 
 require './api'
 run Sinatra::Application
