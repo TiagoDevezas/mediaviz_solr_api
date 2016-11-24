@@ -6,4 +6,4 @@
 
 2. Run development server (reloads on changes):
 
-        $ rerun 'rackup'
+        $ rerun api.rb
