@@ -2,8 +2,8 @@
 
 1. Install dependencies:
 
-  $ bundle
+        $ bundle
 
 2. Run development server:
 
-  $ rerun 'rackup'
+        $ rerun rackup
