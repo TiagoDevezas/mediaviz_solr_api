@@ -5,7 +5,7 @@ require_relative 'helpers/helpers'
 
 configure { set :server, :puma }
 
-Oj.default_options = {:mode => :strict }
+Oj.default_options = {:mode => :compat }
 
 solr = RSolr.connect url: 'http://localhost:8983/solr/articles'
 
@@ -38,5 +38,22 @@ get '/groups' do
   }
 
   response = solr.select params: common_query_params.merge(groups_query_params)
+  Oj.dump(response)
+end
+
+get '/sources' do
+  content_type :json
+
+  # facet=true&facet.pivot=source_name,source_type,source_acronym&limit=-1
+
+  sources_query_params = {
+    "q": "*:*",
+    "fl": "null",
+    "facet": true,
+    "facet.pivot": "source_name,source_type,source_acronym",
+    "facet.limit": -1
+  }
+  response = solr.select params: sources_query_params
+  response = sources_formatter(response, sources_query_params[:"facet.pivot"])
   Oj.dump(response)
 end
