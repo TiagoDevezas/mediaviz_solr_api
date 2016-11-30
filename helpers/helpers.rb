@@ -3,7 +3,7 @@ helpers do
     {
       "defType": "edismax",
       "qf": params[:field] ? params[:field] : "summary title",
-      "q": params[:q] ? "#{params[:q]}" : '*:*',
+      "q": params[:q] || params[:q] != '' ? "#{params[:q]}" : '*:*',
       "fq": [
         params[:source_type] ? "source_type:#{params[:source_type]}" : nil,
         params[:source_name] ? "source_name:\"#{params[:source_name]}\"" : nil,
