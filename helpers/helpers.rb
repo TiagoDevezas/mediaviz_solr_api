@@ -31,18 +31,30 @@ helpers do
     formatted
   end
 
-  def totals_formatter response_hash, pivot_fields, params
+  def totals_formatter response_hash, response_all_hash, pivot_fields, params
     formatted = []
+    formatted_all_counts = []
     pivot_fields = pivot_fields.split('}')[1]
+    total_source_count = response_hash['response']['numFound']
     response = response_hash['facet_counts']['facet_pivot'][pivot_fields]
+    response_all = response_all_hash ? response_all_hash['facet_counts']['facet_pivot'][pivot_fields] : nil
+    if response_all
+      response_all.each do |obj|
+        formatted_all_counts << obj['count']
+      end
+    end
+    i = 0
     response.each do |obj|
       formatted << Hash[
         time: obj['value'],
         articles: obj['count'],
         twitter_shares: obj['stats'] ? obj['stats']['stats_fields']['twitter_shares']['sum'].to_i : 0,
         facebook_shares: obj['stats'] ? obj['stats']['stats_fields']['facebook_shares']['sum'].to_i : 0,
-        total_shares: obj['stats'] ? obj['stats']['stats_fields']['facebook_shares']['sum'].to_i + obj['stats']['stats_fields']['twitter_shares']['sum'].to_i : 0
+        total_shares: obj['stats'] ? obj['stats']['stats_fields']['facebook_shares']['sum'].to_i + obj['stats']['stats_fields']['twitter_shares']['sum'].to_i : 0,
+        percent_of_source: ((obj['count'] / total_source_count.to_f) * 100).round(2),
+        percent_of_day: formatted_all_counts[i] ? ((obj['count'] / formatted_all_counts[i].to_f) * 100 ).round(2) : 0
       ]
+      i += 1
     end
     if params[:since]
       since_index = formatted.index { |h| h[:time] == params[:since].to_s} || nil

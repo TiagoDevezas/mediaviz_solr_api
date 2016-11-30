@@ -50,8 +50,17 @@ get '/totals' do
     # "facet.pivot.mincount": (params[:since] || params[:until]) && params[:by] != 'day' ? 1 : 0
   }
 
+  alt_query_params = common_query_params
+  alt_query_params[:q] = '*:*'
+
+  # facet=true&facet.query={!edismax qf="title summary" tag=q2}portugal&facet.query={!edismax qf="title summary" tag=q1}espanha&facet.pivot={!query=q1}date_only&facet.pivot={!query=q2}date_only
+
   response = solr.select params: common_query_params.merge(groups_query_params)
-  response = totals_formatter(response, groups_query_params[:"facet.pivot"], params)
+  response_all = nil
+  if params[:q]
+    response_all = solr.select params: alt_query_params.merge(groups_query_params)
+  end
+  response = totals_formatter(response, response_all, groups_query_params[:"facet.pivot"], params)
   Oj.dump(response)
 end
 
