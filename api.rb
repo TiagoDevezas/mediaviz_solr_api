@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'oj'
 require 'rsolr'
+require 'countries'
 require_relative 'helpers/helpers'
 
 before do
@@ -14,6 +15,10 @@ configure { set :server, :puma }
 set :protection, false
 
 Oj.default_options = {:mode => :compat }
+
+ISO3166.configure do |config|
+  config.locales = [:en, :pt]
+end
 
 solr = RSolr.connect url: 'http://localhost:8983/solr/articles'
 
@@ -60,5 +65,22 @@ get '/sources' do
   }
   response = solr.select params: sources_query_params
   response = sources_formatter(response, sources_query_params[:"facet.pivot"])
+  Oj.dump(response)
+end
+
+get '/places' do
+  map_type = !params[:map] || params[:map].downcase == 'portugal' ? 'pt' : 'world'
+  lang = lang = params[:lang] || 'pt'
+
+  places_list = get_places_list_for(map_type, lang)
+
+  places_query_params = {
+    "facet": true,
+    "fl": "null",
+    "facet.query": generate_places_query(places_list)
+  }
+  response = solr.post 'select', data: common_query_params.merge(places_query_params)
+  response = response["facet_counts"]["facet_queries"]
+  response = places_formatter(response, places_list)
   Oj.dump(response)
 end

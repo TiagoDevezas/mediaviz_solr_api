@@ -6,7 +6,7 @@ helpers do
       "q": params[:q] ? "#{params[:q]}" : '*:*',
       "fq": [
         params[:source_type] ? "source_type:#{params[:source_type]}" : nil,
-        params[:source_name] ? "source_name:#{params[:source_name]}" : nil,
+        params[:source_name] ? "source_name:\"#{params[:source_name]}\"" : nil,
         params[:source_acronym] ? "source_acronym:#{params[:source_acronym]}" : nil,
         params[:since] ? "date_only:[#{params[:since]} TO *]" : nil,
         params[:until] ? "date_only:[* TO #{params[:until]}]" : nil,
@@ -57,6 +57,76 @@ helpers do
 
   def items_formatter response_hash
     response_hash['response']['docs']
+  end
+
+  def places_formatter response, places_list
+    places = []
+    counts = response.values
+    i = 0
+    places_list.each do |place|
+      place[:count] = counts[i]
+      places << place 
+      i += 1
+    end
+    places
+  end
+
+  def get_places_list_for map_type, lang
+    places = []
+    if map_type == 'pt'
+      ISO3166::Country.find_country_by_name('Portugal').subdivisions.each do |k, v|
+        places << { fips: convert_to_fips(k), name: v[0] }
+      end
+    else
+      countries = ISO3166::Country.all
+      countries.each do |c|
+        country = ISO3166::Country.find_country_by_alpha2(c.alpha2)
+        country_name = country.translation(lang) ? country.translation(lang) : country.name
+        alpha2_code = country.alpha2
+        alpha3_code = country.alpha3
+        country_code = country.country_code
+        places << Hash[
+            name: country_name,
+            alpha2: alpha2_code,
+            alpha3: alpha3_code,
+            country_code: country_code
+          ]
+      end
+    end
+    places
+  end
+
+  def generate_places_query places_list
+    query_array = []
+    base_query = "{!type=edismax qf=\"title summary\"}"
+    places_list.each do |place|
+      query_array << "#{base_query}\"#{place[:name]}\""
+    end
+    query_array
+  end
+
+  def convert_to_fips(code)
+    code = code.to_s
+    one_to_eight = (1..8).to_a.map { |el| '0' + el.to_s }
+    twelve_to_eighteen = (12..18).to_a.map { |el| el.to_s }
+    if code == "20"
+      return "PO23"
+    end
+    if code == "30"
+      return "PO10"
+    end
+    if code == "09"
+      return "PO11"
+    end
+    if code == "10" || code == "11"
+      return "PO" + (code.to_i + 3).to_s
+    end
+    if one_to_eight.include?(code)
+      return "PO0" + (code.to_i + 1).to_s
+    end
+    if twelve_to_eighteen.include?(code)
+      return "PO" + (code.to_i + 4).to_s
+    end
   end
 
 end

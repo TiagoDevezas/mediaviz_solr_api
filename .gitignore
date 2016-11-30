@@ -1,4 +1,5 @@
 .ruby-version
+/config
 /log
 /tmp
 /bin
