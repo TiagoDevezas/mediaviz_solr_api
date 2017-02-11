@@ -93,3 +93,28 @@ get '/places' do
   response = places_formatter(response, places_list)
   Oj.dump(response)
 end
+
+get '/clusters' do
+  clustering_params = {
+    "defType": "edismax",
+    "qf": "summary title",
+    "q": '*:*',
+    "fl": 'title,summary,url,source_name,pub_date,id',
+    "fq": [
+      "source_type:national",
+      "-source_name:(\"O Jogo\", \"Maisfutebol\", \"Record\", \"O Jogo\", \"A Bola\", \"SAPO Desporto\", \"SAPO Notícias\", \"Diário Digital\")",
+      params[:day] ? "date_only:\"#{params[:day]}\"" : "date_only:\"2017-02-08\"",
+      "summary:['' TO *]"
+    ],
+    'rows': "10000000",
+    'LingoClusteringAlgorithm.clusterMergingThreshold': 0.8,
+    'LingoClusteringAlgorithm.desiredClusterCountBase': 20,
+    'LingoClusteringAlgorithm.scoreWeight': 0.5,
+    'LingoClusteringAlgorithm.phraseLabelBoost': 10,
+    'TermDocumentMatrixBuilder.maxWordDf': 0.01,
+    'DocumentAssigner.minClusterSize': 5
+  }
+  response = solr.get 'clustering', params: clustering_params
+  response = cluster_formatter(response)
+  Oj.dump(response)
+end

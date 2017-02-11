@@ -141,4 +141,30 @@ helpers do
     end
   end
 
+  def cluster_formatter response_hash
+    clustered = []
+    documents = response_hash["response"]["docs"]
+    clusters = response_hash["clusters"]
+    clusters.each do |cluster|
+      if cluster["score"] > 3
+        clustered << Hash[
+          labels: cluster["labels"],
+          score: cluster["score"],
+          items: get_items(cluster["docs"], 5, documents)
+        ]
+      end
+    end
+    # clustered.size > 25 ? clustered.slice(0, 25) : clustered
+    clustered.sort_by! { |cluster| cluster[:score] }.reverse
+  end
+
+  def get_items doc_ids_array, num_docs, all_documents
+    item_array = []
+    random_items = doc_ids_array.sample(num_docs)
+    random_items.each do |item|
+      item_array.push all_documents.find { |doc| doc["id"] == item }
+    end
+    item_array
+  end
+
 end
