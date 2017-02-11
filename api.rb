@@ -103,7 +103,7 @@ get '/clusters' do
     "fq": [
       "source_type:national",
       "-source_name:(\"O Jogo\", \"Maisfutebol\", \"Record\", \"O Jogo\", \"A Bola\", \"SAPO Desporto\", \"SAPO Notícias\", \"Diário Digital\")",
-      params[:day] ? "date_only:\"#{params[:day]}\"" : "date_only:\"2017-02-08\"",
+      params[:day] ? "date_only:\"#{params[:day]}\"" : "date_only:\"#{Time.now.strftime("%Y-%m-%d")}\"",
       "summary:['' TO *]"
     ],
     'rows': "10000000",
