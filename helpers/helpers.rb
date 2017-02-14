@@ -51,8 +51,8 @@ helpers do
         twitter_shares: obj['stats'] ? obj['stats']['stats_fields']['twitter_shares']['sum'].to_i : 0,
         facebook_shares: obj['stats'] ? obj['stats']['stats_fields']['facebook_shares']['sum'].to_i : 0,
         total_shares: obj['stats'] ? obj['stats']['stats_fields']['facebook_shares']['sum'].to_i + obj['stats']['stats_fields']['twitter_shares']['sum'].to_i : 0,
-        percent_of_source: ((obj['count'] / total_source_count.to_f) * 100).round(2),
-        percent_of_day: formatted_all_counts[i] ? ((obj['count'] / formatted_all_counts[i].to_f) * 100 ).round(2) : 0
+        percent_of_source: obj['count'] > 0 ? ((obj['count'] / total_source_count.to_f) * 100).round(2) : 0,
+        percent_of_day: obj['count'] > 0 ? ((obj['count'] / formatted_all_counts[i].to_f) * 100 ).round(2) : 0
       ]
       i += 1
     end
