@@ -150,17 +150,24 @@ helpers do
         clustered << Hash[
           labels: cluster["labels"],
           score: cluster["score"],
-          items: get_items(cluster["docs"], 5, documents)
+          items: get_items(cluster["docs"], 5, documents),
+          latest_date: get_cluster_latest_date(cluster, documents)
         ]
       end
     end
     # clustered.size > 25 ? clustered.slice(0, 25) : clustered
-    clustered.sort_by! { |cluster| cluster[:score] }.reverse
+    Hash[ clusters: clustered.sort_by! { |cluster| cluster[:score] }.reverse]
+  end
+
+  def get_cluster_latest_date cluster, documents
+    # puts cluster["docs"][0]
+    first_item = documents.find { |doc| doc["id"] == cluster["docs"][0] }["pub_date"]
+    latest_date = first_item
   end
 
   def get_items doc_ids_array, num_docs, all_documents
     item_array = []
-    random_items = doc_ids_array.sample(num_docs)
+    random_items = doc_ids_array[0..num_docs]
     random_items.each do |item|
       item_array.push all_documents.find { |doc| doc["id"] == item }
     end

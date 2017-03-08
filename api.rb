@@ -53,8 +53,6 @@ get '/totals' do
   alt_query_params = common_query_params
   alt_query_params[:q] = '*:*'
 
-  # facet=true&facet.query={!edismax qf="title summary" tag=q2}portugal&facet.query={!edismax qf="title summary" tag=q1}espanha&facet.pivot={!query=q1}date_only&facet.pivot={!query=q2}date_only
-
   response = solr.select params: common_query_params.merge(groups_query_params)
   response_all = nil
   if params[:q]
@@ -100,21 +98,89 @@ get '/clusters' do
     "qf": "summary title",
     "q": '*:*',
     "fl": 'title,summary,url,source_name,pub_date,id',
+    "sort": "pub_date desc",
     "fq": [
       "source_type:national",
       "-source_name:(\"O Jogo\", \"Maisfutebol\", \"Record\", \"O Jogo\", \"A Bola\", \"SAPO Desporto\", \"SAPO Notícias\", \"Diário Digital\")",
       params[:day] ? "date_only:\"#{params[:day]}\"" : "date_only:\"#{Time.now.strftime("%Y-%m-%d")}\"",
       "summary:['' TO *]"
     ],
-    'rows': "10000000",
-    'LingoClusteringAlgorithm.clusterMergingThreshold': 0.8,
-    'LingoClusteringAlgorithm.desiredClusterCountBase': 20,
-    'LingoClusteringAlgorithm.scoreWeight': 0.5,
-    'LingoClusteringAlgorithm.phraseLabelBoost': 10,
-    'TermDocumentMatrixBuilder.maxWordDf': 0.01,
-    'DocumentAssigner.minClusterSize': 5
+    'rows': "10000000"
   }
-  response = solr.get 'clustering', params: clustering_params
+  lingo_params = {
+    'clustering.engine': 'lingo',
+    # Clusters
+    'LingoClusteringAlgorithm.desiredClusterCountBase': 15,
+    'LingoClusteringAlgorithm.clusterMergingThreshold': 0.8,
+    'LingoClusteringAlgorithm.scoreWeight': 0.3,
+    # Labels
+    'LingoClusteringAlgorithm.labelAssigner': 'org.carrot2.clustering.lingo.UniqueLabelAssigner',
+    'LingoClusteringAlgorithm.phraseLabelBoost': 10.0,
+    'LingoClusteringAlgorithm.phraseLengthPenaltyStart': 8,
+    'LingoClusteringAlgorithm.phraseLengthPenaltyStop': 8,
+    'TermDocumentMatrixBuilder.titleWordsBoost': 10.0,
+    'CompleteLabelFilter.labelOverrideThreshold': 0.65,
+    # Matrix model
+    'TermDocumentMatrixReducer.factorizationFactory': 'org.carrot2.matrix.factorization.NonnegativeMatrixFactorizationEDFactory',
+    'TermDocumentMatrixBuilder.maximumMatrixSize': 37500,
+    'TermDocumentMatrixBuilder.maxWordDf': 0.01,
+    'TermDocumentMatrixBuilder.termWeighting': 'org.carrot2.text.vsm.LogTfIdfTermWeighting',
+    # Phrase extraction
+    'PhraseExtractor.dfThreshold': 3,
+    # Preprocessing
+    'DocumentAssigner.exactPhraseAssignment': false,
+    'DocumentAssigner.minClusterSize': 5,
+    'CaseNormalizer.dfThreshold': 1
+  }
+
+  stc_params = {
+    'clustering.engine': 'stc',
+    # Base clusters
+    'STCClusteringAlgorithm.documentCountBoost': 1.0,
+    'STCClusteringAlgorithm.maxBaseClusters': 300,
+    'STCClusteringAlgorithm.minBaseClusterSize': 2,
+    'STCClusteringAlgorithm.optimalPhraseLength': 3,
+    'STCClusteringAlgorithm.optimalPhraseLengthDev': 2.0,
+    'STCClusteringAlgorithm.singleTermBoost': 0.5,
+    # Clusters
+    'STCClusteringAlgorithm.mergeStemEquivalentBaseClusters': true,
+    'STCClusteringAlgorithm.scoreWeight': 1.0,
+    # Labels
+    'STCClusteringAlgorithm.maxPhraseOverlap': 0.6,
+    'STCClusteringAlgorithm.maxPhrases': 3,
+    'STCClusteringAlgorithm.maxDescPhraseLength': 4,
+    'STCClusteringAlgorithm.mostGeneralPhraseCoverage': 0.5,
+    # Merging and output
+    'STCClusteringAlgorithm.mergeThreshold': 0.6,
+    'STCClusteringAlgorithm.maxClusters': 15,
+    # Preprocessing
+    'CaseNormalizer.dfThreshold': 1,
+    # Word filtering
+    'STCClusteringAlgorithm.ignoreWordIfInHigherDocsPercent': 0.9,
+    'STCClusteringAlgorithm.ignoreWordIfInFewerDocs': 2
+  }
+
+  kmeans_params = {
+    'clustering.engine': 'kmeans',
+    # Clusters
+    'BisectingKMeansClusteringAlgorithm.clusterCount': 45,
+    'BisectingKMeansClusteringAlgorithm.labelCount': 3,
+    # K-means
+    'BisectingKMeansClusteringAlgorithm.maxIterations': 15,
+    'BisectingKMeansClusteringAlgorithm.partitionCount': 2,
+    'BisectingKMeansClusteringAlgorithm.useDimensionalityReduction': true,
+    # Labels
+    'TermDocumentMatrixBuilder.titleWordsBoost': 2.0,
+    # Matrix model
+    'TermDocumentMatrixReducer.factorizationFactory': 'org.carrot2.matrix.factorization.NonnegativeMatrixFactorizationEDFactory',
+    'TermDocumentMatrixBuilder.maximumMatrixSize': 37500,
+    'TermDocumentMatrixBuilder.maxWordDf': 0.9,
+    'TermDocumentMatrixBuilder.termWeighting': 'org.carrot2.text.vsm.LogTfIdfTermWeighting',
+    # Preprocessing
+    'CaseNormalizer.dfThreshold': 1,
+  }
+
+  response = solr.get 'clustering', params: clustering_params.merge(lingo_params)
   response = cluster_formatter(response)
   Oj.dump(response)
 end
