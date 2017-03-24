@@ -111,7 +111,7 @@ get '/clusters' do
     'clustering.engine': 'lingo',
     # Clusters
     'LingoClusteringAlgorithm.desiredClusterCountBase': 15,
-    'LingoClusteringAlgorithm.clusterMergingThreshold': 0.8,
+    'LingoClusteringAlgorithm.clusterMergingThreshold': 0.3,
     'LingoClusteringAlgorithm.scoreWeight': 0.0,
     # Labels
     'LingoClusteringAlgorithm.labelAssigner': 'org.carrot2.clustering.lingo.UniqueLabelAssigner',
@@ -119,17 +119,17 @@ get '/clusters' do
     'LingoClusteringAlgorithm.phraseLengthPenaltyStart': 8,
     'LingoClusteringAlgorithm.phraseLengthPenaltyStop': 8,
     'TermDocumentMatrixBuilder.titleWordsBoost': 10.0,
-    'CompleteLabelFilter.labelOverrideThreshold': 0.65,
+    'CompleteLabelFilter.labelOverrideThreshold': 0.0,
     # Matrix model
     'TermDocumentMatrixReducer.factorizationFactory': 'org.carrot2.matrix.factorization.NonnegativeMatrixFactorizationEDFactory',
-    'TermDocumentMatrixBuilder.maximumMatrixSize': 37500,
+    'TermDocumentMatrixBuilder.maximumMatrixSize': 375000,
     'TermDocumentMatrixBuilder.maxWordDf': 0.01,
     'TermDocumentMatrixBuilder.termWeighting': 'org.carrot2.text.vsm.LogTfIdfTermWeighting',
     # Phrase extraction
-    'PhraseExtractor.dfThreshold': 3,
+    'PhraseExtractor.dfThreshold': 1,
     # Preprocessing
     'DocumentAssigner.exactPhraseAssignment': false,
-    'DocumentAssigner.minClusterSize': 5,
+    'DocumentAssigner.minClusterSize': 2,
     'CaseNormalizer.dfThreshold': 1
   }
 
@@ -181,6 +181,6 @@ get '/clusters' do
   }
 
   response = solr.get 'clustering', params: clustering_params.merge(lingo_params)
-  response = cluster_formatter(response)
+  response = cluster_formatter(response, lingo_params)
   Oj.dump(response)
 end

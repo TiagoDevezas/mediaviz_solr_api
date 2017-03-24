@@ -141,8 +141,9 @@ helpers do
     end
   end
 
-  def cluster_formatter response_hash
+  def cluster_formatter response_hash, lingo_params
     clustered = []
+    sources = response_hash["response"]["docs"].collect { |doc| doc["source_name"] }.uniq.sort
     documents = response_hash["response"]["docs"]
     clusters = response_hash["clusters"]
     clusters.each do |cluster|
@@ -156,7 +157,7 @@ helpers do
       end
     end
     # clustered.size > 25 ? clustered.slice(0, 25) : clustered
-    Hash[ clusters: clustered.sort_by! { |cluster| cluster[:score] }.reverse]
+    Hash[sources: sources, algorithm_params: lingo_params, clusters: clustered.sort_by! { |cluster| cluster[:score] }.reverse]
   end
 
   def get_cluster_latest_date cluster, documents
