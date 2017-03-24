@@ -112,7 +112,7 @@ get '/clusters' do
     # Clusters
     'LingoClusteringAlgorithm.desiredClusterCountBase': 15,
     'LingoClusteringAlgorithm.clusterMergingThreshold': 0.8,
-    'LingoClusteringAlgorithm.scoreWeight': 0.3,
+    'LingoClusteringAlgorithm.scoreWeight': 0.0,
     # Labels
     'LingoClusteringAlgorithm.labelAssigner': 'org.carrot2.clustering.lingo.UniqueLabelAssigner',
     'LingoClusteringAlgorithm.phraseLabelBoost': 10.0,
