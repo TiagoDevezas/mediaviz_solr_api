@@ -148,11 +148,14 @@ helpers do
     clusters = response_hash["clusters"]
     clusters.each do |cluster|
       if cluster["score"] > 3
+        items_and_date = get_items(cluster["docs"], 5, documents)
+        items = items_and_date[:items]
+        latest_date = items_and_date[:latest_date]
         clustered << Hash[
           labels: cluster["labels"],
           score: cluster["score"],
-          items: get_items(cluster["docs"], 5, documents),
-          latest_date: get_cluster_latest_date(cluster, documents)
+          items: items,
+          latest_date: latest_date
         ]
       end
     end
@@ -168,11 +171,16 @@ helpers do
 
   def get_items doc_ids_array, num_docs, all_documents
     item_array = []
-    random_items = doc_ids_array[0..num_docs]
+    # random_items = doc_ids_array[0..num_docs]
+    random_items = doc_ids_array.sample(num_docs)
     random_items.each do |item|
       item_array.push all_documents.find { |doc| doc["id"] == item }
     end
-    item_array
+    item_array_sorted = item_array.sort_by { |k| k["pub_date"] }.reverse
+    latest_date = item_array_sorted[0]["pub_date"]
+    items_and_date = Hash[items: item_array_sorted, latest_date: latest_date]
+    # puts items_and_date[:items]
+    # item_array_sorted
   end
 
 end

@@ -93,6 +93,17 @@ get '/places' do
 end
 
 get '/clusters' do
+  sources_to_show = params[:sourcesToShow]
+  sources_to_hide = params[:sourcesToHide]
+  hide_source_string = "-source_name:("
+  if (sources_to_hide)
+    sources_to_hide_array = []
+    sources_to_hide.each do |s|
+      sources_to_hide_array << "\"" + s + "\""
+    end
+    hide_source_string << sources_to_hide_array.join(",")
+    hide_source_string << ")"
+  end
   clustering_params = {
     "defType": "edismax",
     "qf": "summary title",
@@ -101,7 +112,8 @@ get '/clusters' do
     "sort": "pub_date desc",
     "fq": [
       "source_type:national",
-      "-source_name:(\"O Jogo\", \"Maisfutebol\", \"Record\", \"O Jogo\", \"A Bola\", \"SAPO Desporto\", \"SAPO Notícias\", \"Diário Digital\")",
+      sources_to_hide ? hide_source_string : "",
+      # "-source_name:(\"O Jogo\", \"Maisfutebol\", \"Record\", \"O Jogo\", \"A Bola\", \"SAPO Desporto\", \"SAPO Notícias\", \"Diário Digital\")",
       params[:day] ? "date_only:\"#{params[:day]}\"" : "date_only:\"#{Time.now.strftime("%Y-%m-%d")}\"",
       "summary:['' TO *]"
     ],
@@ -110,8 +122,8 @@ get '/clusters' do
   lingo_params = {
     'clustering.engine': 'lingo',
     # Clusters
-    'LingoClusteringAlgorithm.desiredClusterCountBase': 15,
-    'LingoClusteringAlgorithm.clusterMergingThreshold': 0.3,
+    'LingoClusteringAlgorithm.desiredClusterCountBase': 5,
+    'LingoClusteringAlgorithm.clusterMergingThreshold': 0.1,
     'LingoClusteringAlgorithm.scoreWeight': 0.0,
     # Labels
     'LingoClusteringAlgorithm.labelAssigner': 'org.carrot2.clustering.lingo.UniqueLabelAssigner',
