@@ -183,4 +183,20 @@ helpers do
     # item_array_sorted
   end
 
+  def format_algo_params algo_params
+    formatted = {}
+    algo_params.each do |param|
+      param = JSON.parse(param)
+      key = param["id"]
+      value = param["storedValue"]
+      if param["type"] == "integer"
+        value = value.to_i
+      elsif param["type"] == "float"
+        value = value.to_f
+      end
+      formatted[key] = value
+    end
+    formatted
+  end
+
 end

@@ -95,6 +95,8 @@ end
 get '/clusters' do
   sources_to_show = params[:sourcesToShow]
   sources_to_hide = params[:sourcesToHide]
+  lingo_params = format_algo_params(params[:lingo])
+  puts lingo_params
   hide_source_string = "-source_name:("
   if (sources_to_hide)
     sources_to_hide_array = []
@@ -122,9 +124,9 @@ get '/clusters' do
   lingo_params = {
     'clustering.engine': 'lingo',
     # Clusters
-    'LingoClusteringAlgorithm.desiredClusterCountBase': 5,
+    'LingoClusteringAlgorithm.desiredClusterCountBase': lingo_params["desiredClusterCountBase"] || 5,
     'LingoClusteringAlgorithm.clusterMergingThreshold': 0.1,
-    'LingoClusteringAlgorithm.scoreWeight': 0.0,
+    'LingoClusteringAlgorithm.scoreWeight': lingo_params["scoreWeight"] || 0.0,
     # Labels
     'LingoClusteringAlgorithm.labelAssigner': 'org.carrot2.clustering.lingo.UniqueLabelAssigner',
     'LingoClusteringAlgorithm.phraseLabelBoost': 10.0,
@@ -135,14 +137,14 @@ get '/clusters' do
     # Matrix model
     'TermDocumentMatrixReducer.factorizationFactory': 'org.carrot2.matrix.factorization.NonnegativeMatrixFactorizationEDFactory',
     'TermDocumentMatrixBuilder.maximumMatrixSize': 375000,
-    'TermDocumentMatrixBuilder.maxWordDf': 0.01,
+    'TermDocumentMatrixBuilder.maxWordDf': lingo_params["maxWordDf"] || 0.01,
     'TermDocumentMatrixBuilder.termWeighting': 'org.carrot2.text.vsm.LogTfIdfTermWeighting',
     # Phrase extraction
-    'PhraseExtractor.dfThreshold': 1,
+    'PhraseExtractor.dfThreshold': lingo_params["PhraseExtractor.dfThreshold"] || 1,
     # Preprocessing
     'DocumentAssigner.exactPhraseAssignment': false,
-    'DocumentAssigner.minClusterSize': 2,
-    'CaseNormalizer.dfThreshold': 1
+    'DocumentAssigner.minClusterSize': lingo_params["minClusterSize"] || 2,
+    'CaseNormalizer.dfThreshold': lingo_params["CaseNormalizer.dfThreshold"] || 1
   }
 
   stc_params = {
