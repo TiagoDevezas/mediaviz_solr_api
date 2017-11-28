@@ -1,11 +1,13 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    builder (3.2.2)
+    builder (3.2.3)
     countries (2.0.2)
       i18n_data (~> 0.7.0)
       money (~> 6.7)
       unicode_utils (~> 1.4)
+    faraday (0.12.1)
+      multipart-post (>= 1.2, < 3)
     ffi (1.9.14)
     i18n (0.7.0)
     i18n_data (0.7.0)
@@ -16,6 +18,8 @@ GEM
     money (6.7.1)
       i18n (>= 0.6.4, <= 0.7.0)
       sixarm_ruby_unaccent (>= 1.1.1, < 2)
+    multipart-post (2.0.0)
+    murmurhash3 (0.1.6)
     oj (2.17.5)
     puma (3.6.2)
     rack (1.6.5)
@@ -26,8 +30,9 @@ GEM
       ffi (>= 0.5.0)
     rerun (0.11.0)
       listen (~> 3.0)
-    rsolr (1.1.2)
+    rsolr (2.0.2)
       builder (>= 2.1.2)
+      faraday
     ruby_dep (1.5.0)
     sinatra (1.4.7)
       rack (~> 1.5)
@@ -42,6 +47,7 @@ PLATFORMS
 
 DEPENDENCIES
   countries
+  murmurhash3
   oj
   puma
   rerun
@@ -49,4 +55,4 @@ DEPENDENCIES
   sinatra
 
 BUNDLED WITH
-   1.13.6
+   1.14.5

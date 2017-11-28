@@ -1,5 +1,18 @@
 helpers do
+  require_relative 'lsh'
+  
   def common_query_params
+    sources_to_show = params[:sourcesToShow]
+    sources_to_hide = params[:sourcesToHide]
+    hide_source_string = "-source_name:("
+    if (sources_to_hide && sources_to_hide.kind_of?(Array))
+      sources_to_hide_array = []
+      sources_to_hide.each do |s|
+        sources_to_hide_array << "\"" + s + "\""
+      end
+      hide_source_string << sources_to_hide_array.join(",")
+      hide_source_string << ")"
+    end
     {
       "defType": "edismax",
       "qf": params[:field] ? params[:field] : "summary title",
@@ -13,7 +26,9 @@ helpers do
         params[:since] && params[:until] ? "date_only:[#{params[:since]} TO #{params[:until]}]" : nil,
         params[:by] && params[:by] == 'hour' ? "hour:[0 TO 23]" : nil,
         params[:by] && params[:by] == 'weekday' ? "weekday:[1 TO 7]" : nil,
-        params[:by] && params[:by] == 'month' ? "month:[1 TO 12]" : nil
+        params[:by] && params[:by] == 'month' ? "month:[1 TO 12]" : nil,
+        params[:day] ? "date_only:#{params[:day]}" : nil,
+        sources_to_hide ? hide_source_string : "",
       ]
     }
   end
@@ -67,8 +82,16 @@ helpers do
     formatted
   end
 
-  def items_formatter response_hash
-    response_hash['response']['docs']
+  def items_formatter response_hash, caller
+    if caller
+      resp_header = response_hash['responseHeader']['params']
+      response = response_hash['response']
+      response['numPages'] = (response['numFound'] / resp_header['rows'].to_f).ceil
+      response['currPage'] = resp_header['start'].to_i < resp_header['rows'].to_i ? 1 : ((resp_header['start'].to_i + 1) / resp_header['rows'].to_f).ceil
+      response_hash['response']
+    else
+      response_hash['response']['docs']
+    end
   end
 
   def places_formatter response, places_list
@@ -172,13 +195,14 @@ helpers do
   def get_items doc_ids_array, num_docs, all_documents
     item_array = []
     # random_items = doc_ids_array[0..num_docs]
-    random_items = doc_ids_array.sample(num_docs)
+    random_items = doc_ids_array.shuffle # Obviously not random, return all items
+    # random_items = doc_ids_array.sample(num_docs)
     random_items.each do |item|
       item_array.push all_documents.find { |doc| doc["id"] == item }
     end
     item_array_sorted = item_array.sort_by { |k| k["pub_date"] }.reverse
     latest_date = item_array_sorted[0]["pub_date"]
-    items_and_date = Hash[items: item_array_sorted, latest_date: latest_date]
+    items_and_date = Hash[items: item_array, latest_date: latest_date]
     # puts items_and_date[:items]
     # item_array_sorted
   end
