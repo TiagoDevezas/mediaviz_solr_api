@@ -67,8 +67,7 @@ get '/atom' do
     "fq": [
       "source_type:national",
       sources_to_hide ? hide_source_string : "",
-      # "-source_name:(\"O Jogo\", \"Maisfutebol\", \"Record\", \"O Jogo\", \"A Bola\", \"SAPO Desporto\", \"SAPO Notícias\", \"Diário Digital\")",
-      params[:day] ? date_string : "date_only:\"#{Time.now.strftime("%Y-%m-%d")}\""
+      # params[:day] ? date_string : "date_only:\"#{Time.now.strftime("%Y-%m-%d")}\""
     ],
     "rows": params[:rows] ? params[:rows] : 100,
     "start": params[:start] ? params[:start] : 0
@@ -81,7 +80,7 @@ get '/atom' do
   response = solr.select params: common_query_params.merge(atom_params)
   response = items_formatter(response, caller)
 
-  xml_title_search_q = params[:q] ? " - Pesquisa por #{params[:q]}" : ""
+  xml_title_search_q = params[:q] ? " - Pesquisa por '#{params[:q]}'" : ""
 
   builder do |xml|
     xml.instruct! :xml, :version => '1.0'
@@ -93,7 +92,7 @@ get '/atom' do
 
         response.each do |doc|
           xml.item do
-            xml.title doc['title']
+            xml.title "#{doc['title']} - #{doc['source_name']}"
             xml.link doc['url']
             xml.description doc['summary']
             xml.pubDate doc['pub_date']
@@ -198,7 +197,6 @@ get '/clusters' do
     "fq": [
       "source_type:national",
       sources_to_hide ? hide_source_string : "",
-      # "-source_name:(\"O Jogo\", \"Maisfutebol\", \"Record\", \"O Jogo\", \"A Bola\", \"SAPO Desporto\", \"SAPO Notícias\", \"Diário Digital\")",
       params[:day] ? date_string : "date_only:\"#{Time.now.strftime("%Y-%m-%d")}\"",
       "summary:['' TO *]"
     ],
@@ -207,9 +205,9 @@ get '/clusters' do
   lingo_params = {
     'clustering.engine': 'lingo',
     # Clusters
-    'LingoClusteringAlgorithm.desiredClusterCountBase': 5 || lingo_params["desiredClusterCountBase"],
+    'LingoClusteringAlgorithm.desiredClusterCountBase': lingo_params["desiredClusterCountBase"] || 5,
     'LingoClusteringAlgorithm.clusterMergingThreshold': 0.1,
-    'LingoClusteringAlgorithm.scoreWeight': 0.0 || lingo_params["scoreWeight"],
+    'LingoClusteringAlgorithm.scoreWeight': lingo_params["scoreWeight"] || 0.0,
     # Labels
     'LingoClusteringAlgorithm.labelAssigner': 'org.carrot2.clustering.lingo.UniqueLabelAssigner',
     'LingoClusteringAlgorithm.phraseLabelBoost': 10.0,
@@ -220,14 +218,14 @@ get '/clusters' do
     # Matrix model
     'TermDocumentMatrixReducer.factorizationFactory': 'org.carrot2.matrix.factorization.NonnegativeMatrixFactorizationEDFactory',
     'TermDocumentMatrixBuilder.maximumMatrixSize': 375000,
-    'TermDocumentMatrixBuilder.maxWordDf': 0.01 || lingo_params["maxWordDf"],
+    'TermDocumentMatrixBuilder.maxWordDf': lingo_params["maxWordDf"] || 0.01,
     'TermDocumentMatrixBuilder.termWeighting': 'org.carrot2.text.vsm.LogTfIdfTermWeighting',
     # Phrase extraction
-    'PhraseExtractor.dfThreshold': 1 || lingo_params["PhraseExtractor.dfThreshold"],
+    'PhraseExtractor.dfThreshold': lingo_params["PhraseExtractor.dfThreshold"] || 1,
     # Preprocessing
     'DocumentAssigner.exactPhraseAssignment': false,
-    'DocumentAssigner.minClusterSize': 2 || lingo_params["minClusterSize"],
-    'CaseNormalizer.dfThreshold': 1 || lingo_params["CaseNormalizer.dfThreshold"]
+    'DocumentAssigner.minClusterSize': lingo_params["minClusterSize"] || 2,
+    'CaseNormalizer.dfThreshold': lingo_params["CaseNormalizer.dfThreshold"] || 1
   }
 
   stc_params = {

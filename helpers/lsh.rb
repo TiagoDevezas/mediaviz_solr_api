@@ -2,13 +2,13 @@ require 'json'
 require 'murmurhash3'
 
 $stopwords = "a as à às ao aos o os e é és em de des da das do dos um uns uma umas num nuns numa numas que no nos na nas com como por para até aí cada este estes esta estas se".split(' ')
-$buckets = {}
-$clusters = []
+# $buckets = {}
+# $clusters = []
 
-$shingle_size = 3
-$hash_functions = 200
-$num_rows = 3
-$min_cluster_size = 3
+# $shingle_size = 3
+# $hash_functions = 200
+# $num_rows = 3
+# $min_cluster_size = 3
 
 def get_shingles text, size
   text = prepare_text(text)
@@ -40,7 +40,7 @@ def get_minhash_signatures shingles, hash_functions
 
   end
 
-  signature
+  signature = signature.uniq
 
 end
 
@@ -84,8 +84,9 @@ def get_clusters doc_id_arr
     end
   end
   $clusters = groups
-  $clusters = $min_cluster_size ? $clusters = $clusters.reject! { |cluster| cluster.length < $min_cluster_size } : $clusters
-  $clusters = $clusters.sort_by { |cluster| -cluster.size }
+  $clusters = $min_cluster_size ? $clusters.reject { |cluster| cluster.size < $min_cluster_size } : $clusters
+  $clusters = $clusters ? $clusters.sort_by { |cluster| -cluster.size } : []
+  puts $clusters
 end
 
 def jaccard_similarity arr_a, arr_b
@@ -96,14 +97,14 @@ def jaccard_similarity arr_a, arr_b
 end
 
 def get_news_and_clusters items
+
   $buckets = {}
   $clusters = []
 
-  puts items
-
-  # items = items['docs']
-
-  # puts items.size
+  $shingle_size = 3
+  $hash_functions = 200
+  $num_rows = 3
+  $min_cluster_size = 3
 
   items.each do |item|
     next if item['title'].empty? || item['summary'].empty?
@@ -125,24 +126,7 @@ def get_news_and_clusters items
     cluster_obj['score'] = cluster_obj['items'].size
     clusters_with_title << cluster_obj
   end
-  # clusters_with_title
+
   payload = Hash[clusters: clusters_with_title]
 
-  # puts payload
-
-  # payload
-
-  # File.open("temp.json","w") do |f|
-  #   f.write(clusters_with_title.to_json)
-  # end
-  # puts clusters_with_title
-  # pp items.select { |item| item['id'] == "5109012" }
-  # pp $clusters[0]
-  # pp clusters_with_title
-
-  # File.open("temp.json","w") do |f|
-  #   f.write(clusters_with_title.to_json)
-  # end
-  # puts "Created file temp.json."
-  # payload
 end
