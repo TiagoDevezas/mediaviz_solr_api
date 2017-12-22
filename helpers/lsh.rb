@@ -86,7 +86,7 @@ def get_clusters doc_id_arr
   $clusters = groups
   $clusters = $min_cluster_size ? $clusters.reject { |cluster| cluster.size < $min_cluster_size } : $clusters
   $clusters = $clusters ? $clusters.sort_by { |cluster| -cluster.size } : []
-  puts $clusters
+  # puts $clusters
 end
 
 def jaccard_similarity arr_a, arr_b
@@ -96,15 +96,15 @@ def jaccard_similarity arr_a, arr_b
   jaccard_s = intersection.to_f / union
 end
 
-def get_news_and_clusters items
+def get_news_and_clusters items, params
 
   $buckets = {}
   $clusters = []
 
-  $shingle_size = 3
-  $hash_functions = 200
-  $num_rows = 3
-  $min_cluster_size = 3
+  $shingle_size = params[:shingle_size] ? params[:shingle_size].to_i : 3
+  $hash_functions = params[:hashes] ? params[:hashes].to_i : 200
+  $num_rows = params[:rows] ? params[:rows].to_i : 3
+  $min_cluster_size = params[:cluster_size] ? params[:cluster_size].to_i : 3
 
   items.each do |item|
     next if item['title'].empty? || item['summary'].empty?

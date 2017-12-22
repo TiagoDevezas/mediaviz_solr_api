@@ -281,7 +281,7 @@ get '/clusters' do
   else
     response = solr.select params: clustering_params
     response = items_formatter(response, nil)
-    response = get_news_and_clusters(response)
+    response = get_news_and_clusters(response, params)
     # puts clusters
   end
   Oj.dump(response)
