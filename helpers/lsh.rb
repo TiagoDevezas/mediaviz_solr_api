@@ -67,7 +67,7 @@ def get_related buckets
 end
 
 def get_clusters doc_id_arr
-  # Answer in https://stackoverflow.com/a/29314633
+  # From https://stackoverflow.com/a/29314633
   return doc_id_arr if doc_id_arr.empty?
   rest = doc_id_arr.dup
   groups = []
