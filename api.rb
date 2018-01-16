@@ -205,9 +205,9 @@ get '/clusters' do
   lingo_params = {
     'clustering.engine': 'lingo',
     # Clusters
-    'LingoClusteringAlgorithm.desiredClusterCountBase': lingo_params["desiredClusterCountBase"] || 5,
+    'LingoClusteringAlgorithm.desiredClusterCountBase': lingo_params ? lingo_params["desiredClusterCountBase"] : 5,
     'LingoClusteringAlgorithm.clusterMergingThreshold': 0.1,
-    'LingoClusteringAlgorithm.scoreWeight': lingo_params["scoreWeight"] || 0.0,
+    'LingoClusteringAlgorithm.scoreWeight': lingo_params ? lingo_params["scoreWeight"] : 0.0,
     # Labels
     'LingoClusteringAlgorithm.labelAssigner': 'org.carrot2.clustering.lingo.UniqueLabelAssigner',
     'LingoClusteringAlgorithm.phraseLabelBoost': 10.0,
@@ -218,14 +218,14 @@ get '/clusters' do
     # Matrix model
     'TermDocumentMatrixReducer.factorizationFactory': 'org.carrot2.matrix.factorization.NonnegativeMatrixFactorizationEDFactory',
     'TermDocumentMatrixBuilder.maximumMatrixSize': 375000,
-    'TermDocumentMatrixBuilder.maxWordDf': lingo_params["maxWordDf"] || 0.01,
+    'TermDocumentMatrixBuilder.maxWordDf': lingo_params ? lingo_params["maxWordDf"] : 0.01,
     'TermDocumentMatrixBuilder.termWeighting': 'org.carrot2.text.vsm.LogTfIdfTermWeighting',
     # Phrase extraction
-    'PhraseExtractor.dfThreshold': lingo_params["PhraseExtractor.dfThreshold"] || 1,
+    'PhraseExtractor.dfThreshold': lingo_params ? lingo_params["PhraseExtractor.dfThreshold"] : 1,
     # Preprocessing
     'DocumentAssigner.exactPhraseAssignment': false,
-    'DocumentAssigner.minClusterSize': lingo_params["minClusterSize"] || 2,
-    'CaseNormalizer.dfThreshold': lingo_params["CaseNormalizer.dfThreshold"] || 1
+    'DocumentAssigner.minClusterSize': lingo_params ? lingo_params["minClusterSize"] : 2,
+    'CaseNormalizer.dfThreshold': lingo_params ? lingo_params["CaseNormalizer.dfThreshold"] : 1
   }
 
   stc_params = {
@@ -275,13 +275,14 @@ get '/clusters' do
     'CaseNormalizer.dfThreshold': 1,
   }
   response = nil
-  if !params[:algorithm]
+  if params[:algorithm] == 'lingo'
     response = solr.get 'clustering', params: clustering_params.merge(lingo_params)
     response = cluster_formatter(response, lingo_params)
   else
-    response = solr.select params: clustering_params
+    lsh_params = params[:lsh] ? format_algo_params(params[:lsh]) : nil
+    response = solr.select params: clustering_params.merge(lsh_params)
     response = items_formatter(response, nil)
-    response = get_news_and_clusters(response, params)
+    response = get_news_and_clusters(response, lsh_params)
     # puts clusters
   end
   Oj.dump(response)

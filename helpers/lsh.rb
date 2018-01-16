@@ -101,10 +101,10 @@ def get_news_and_clusters items, params
   $buckets = {}
   $clusters = []
 
-  $shingle_size = params[:shingle_size] ? params[:shingle_size].to_i : 3
-  $hash_functions = params[:hashes] ? params[:hashes].to_i : 200
-  $num_rows = params[:rows] ? params[:rows].to_i : 3
-  $min_cluster_size = params[:cluster_size] ? params[:cluster_size].to_i : 3
+  $shingle_size = params['shingle_size'] ? params['shingle_size'].to_i : 3
+  $hash_functions = params['hash_functions'] ? params['hash_functions'].to_i : 200
+  $num_rows = params['num_rows'] ? params['num_rows'].to_i : 3
+  $min_cluster_size = params['min_cluster_size'] ? params['min_cluster_size'].to_i : 3
 
   items.each do |item|
     next if item['title'].empty? || item['summary'].empty?
