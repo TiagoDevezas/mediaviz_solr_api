@@ -168,7 +168,7 @@ end
 get '/clusters' do
   sources_to_show = params[:sourcesToShow]
   sources_to_hide = params[:sourcesToHide]
-  current_day = Date.parse(params[:day])
+  current_day = params[:day] ? Date.parse(params[:day]) : Date.parse(Time.now.strftime("%Y-%m-%d"))
   plus_one_week = current_day + 7
   lingo_params = params[:lingo] ? format_algo_params(params[:lingo]) : nil
   hide_source_string = "-source_name:("
