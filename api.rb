@@ -28,7 +28,7 @@ get '/items' do
   articles_query_params = {
     "sort": "pub_date desc",
     "rows": params[:rows] ? params[:rows] : 10,
-    "start": params[:start] ? params[:start] : 0
+    "start": params[:start] || params[:offset] ? params[:start] || params[:offset] : 0
   }
 
   response = solr.select params: common_query_params.merge(articles_query_params)
