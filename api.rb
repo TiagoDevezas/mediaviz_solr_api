@@ -23,6 +23,12 @@ end
 
 solr = RSolr.connect url: 'http://localhost:8983/solr/articles', read_timeout: 240, open_timeout: 240
 
+get '/solr' do
+  response = solr.select params: params
+  response = response['response']['docs']
+  Oj.dump(response)
+end
+
 get '/items' do
   caller = params[:caller]
   articles_query_params = {
