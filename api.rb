@@ -24,9 +24,15 @@ end
 solr = RSolr.connect url: 'http://localhost:8983/solr/articles', read_timeout: 240, open_timeout: 240
 
 get '/solr' do
-  response = solr.select params: params
-  response = response['response']['docs']
-  Oj.dump(response)
+  if params[:rows] && params[:rows].to_i > 500
+    status 403
+    error_msg = {errors: [{ code: 403, message: "Maximum number of rows allowed per request is 500."}]}
+    Oj.dump(error_msg)
+  else
+    response = solr.select params: params
+    response = response['response']['docs']
+    Oj.dump(response)
+  end
 end
 
 get '/items' do
